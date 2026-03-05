@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none';">
+    <meta http-equiv="Referrer-Policy" content="no-referrer">
+    <title>Drag and Drop Image Upload</title>
+    <link rel="stylesheet" href="public/styles.css">
+  </head>
+  <body>
+    <div class="editor-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <strong class="app-title">Image Studio</strong>
+          <span class="app-subtitle">Web Image Editing Workspace</span>
+        </div>
+        <div class="topbar-actions">
+          <button id="download-btn">Download</button>
+          <button id="quit-btn">Clear</button>
+          <button id="help-btn">Help</button>
+        </div>
+      </header>
+
+      <main class="editor-main">
+        <aside class="left-dock" aria-label="Tool tabs">
+          <p class="dock-title">Tools</p>
+          <div id="menu-buttons-group">
+            <button id="menu-btn" class="menu-button">Controls</button>
+            <button id="menu-btn-2" class="menu-button">Filters</button>
+            <button id="menu-btn-3" class="menu-button">Channels</button>
+            <div id="controls">
+              <button id="restore-btn">Undo</button>
+              <button id="redo-btn">Redo</button>
+            </div>
+            <div class="history-progress" aria-live="polite">
+              <div class="history-progress-row">
+                <div class="history-progress-head">
+                  <span>Undo</span>
+                  <span id="undo-progress-text">Used 0 / Free 200</span>
+                </div>
+                <div class="history-progress-track" role="presentation">
+                  <span id="undo-progress-fill" class="history-progress-fill"></span>
+                </div>
+              </div>
+              <div class="history-progress-row">
+                <div class="history-progress-head">
+                  <span>Redo</span>
+                  <span id="redo-progress-text">Used 0 / Free 200</span>
+                </div>
+                <div class="history-progress-track" role="presentation">
+                  <span id="redo-progress-fill" class="history-progress-fill redo-fill"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="shortcut-card">
+            <p class="shortcut-title">Shortcuts</p>
+            <p>Move: Arrow keys</p>
+            <p>Scale: +/- or mouse wheel</p>
+            <p>Flip: F</p>
+            <p>Rotate: R</p>
+            <p>Undo: Right Alt+Z</p>
+            <p>Redo: Right Alt+Y</p>
+          </div>
+        </aside>
+
+        <section class="workspace" aria-label="Canvas workspace">
+          <div class="workspace-stage">
+            <div class="ruler-corner" aria-hidden="true"></div>
+            <div id="ruler-top" class="ruler ruler-top" aria-hidden="true"></div>
+            <div id="ruler-left" class="ruler ruler-left" aria-hidden="true"></div>
+            <div id="scale-readout" class="scale-readout">No image loaded</div>
+            <div id="drop-area">Drag &amp; drop or click to upload an image</div>
+            <img id="preview" src="" alt="Image preview" style="display:none;">
+          </div>
+        </section>
+
+        <aside class="inspector" aria-label="Inspector panels">
+          <div id="side-menu" style="display:flex;">
+            <button id="close-menu-btn" title="Hide controls">✕</button>
+            <h3>Transform</h3>
+            <div id="zoom-buttons">
+              <button id="enlarge-btn" aria-label="Enlarge">+</button>
+              <button id="shrink-btn" aria-label="Shrink">-</button>
+            </div>
+            <div id="arrow-buttons">
+              <button id="up-btn" aria-label="Move up"><span class="arrow-glyph">&uarr;</span></button>
+              <button id="left-btn" aria-label="Move left"><span class="arrow-glyph">&larr;</span></button>
+              <button id="down-btn" aria-label="Move down"><span class="arrow-glyph">&darr;</span></button>
+              <button id="right-btn" aria-label="Move right"><span class="arrow-glyph">&rarr;</span></button>
+            </div>
+            <div id="transform-action-buttons">
+              <button id="reset-btn" aria-label="Recenter" title="Recenter">
+                <img class="btn-icon" src="public/img/center.png" alt="Recenter">
+              </button>
+              <button id="flip-btn" aria-label="Flip" title="Flip">
+                <img class="btn-icon" src="public/img/flip.png" alt="Flip">
+              </button>
+              <button id="rotate-btn" aria-label="Rotate" title="Rotate">
+                <img class="btn-icon" src="public/img/rotate.png" alt="Rotate">
+              </button>
+            </div>
+          </div>
+
+          <div id="side-menu-2" style="display:flex;">
+            <button id="close-menu-2-btn" title="Hide filters">✕</button>
+            <h3>Filters</h3>
+            
+            <div id="pixel-modification-buttons">
+              <a class="section-label">Pixel Filters</a>
+              <div id="filter-buttons">
+                <button id="invert-btn">Invert</button>
+                <button id="grayscale-btn">Grayscale</button>
+                <button id="brightness-btn">Dark Edges</button>
+                <button id="beige-btn">Beige</button>
+                <button id="polarization-btn">Polarization</button>
+                <button id="acrylic-btn">Acrylic</button>
+                <button id="median-btn">Median</button>
+                <button id="sobel-btn">Sobel</button>
+              </div>
+              <a class="section-label">Map Generation</a>
+              <div id="transform-button">
+                <button id="height-btn">Height</button>
+                <button id="normal-btn">Normal</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="side-menu-3" style="display:flex;">
+            <button id="close-menu-3-btn" title="Hide channels">✕</button>
+            <h3>Channels</h3>
+            <div id="chanel-buttons">
+              <div class="slider-container">
+                <label for="red-slider">Red</label>
+                <input id="red-slider" type="range" min="0" max="255" value="255">
+                <input id="red-value" class="channel-value-input" type="number" min="0" max="255" step="1" value="255" inputmode="numeric" aria-label="Red value">
+                <button id="red-reset-btn" class="channel-reset-btn" title="Reset red channel" aria-label="Reset red channel">&#x21BA;</button>
+              </div>
+              <div class="slider-container">
+                <label for="green-slider">Green</label>
+                <input id="green-slider" type="range" min="0" max="255" value="255">
+                <input id="green-value" class="channel-value-input" type="number" min="0" max="255" step="1" value="255" inputmode="numeric" aria-label="Green value">
+                <button id="green-reset-btn" class="channel-reset-btn" title="Reset green channel" aria-label="Reset green channel">&#x21BA;</button>
+              </div>
+              <div class="slider-container">
+                <label for="blue-slider">Blue</label>
+                <input id="blue-slider" type="range" min="0" max="255" value="255">
+                <input id="blue-value" class="channel-value-input" type="number" min="0" max="255" step="1" value="255" inputmode="numeric" aria-label="Blue value">
+                <button id="blue-reset-btn" class="channel-reset-btn" title="Reset blue channel" aria-label="Reset blue channel">&#x21BA;</button>
+              </div>
+              <div class="slider-container">
+                <label for="alpha-slider">Alpha</label>
+                <input id="alpha-slider" type="range" min="0" max="255" value="255">
+                <input id="alpha-value" class="channel-value-input" type="number" min="0" max="255" step="1" value="255" inputmode="numeric" aria-label="Alpha value">
+                <button id="alpha-reset-btn" class="channel-reset-btn" title="Reset alpha channel" aria-label="Reset alpha channel">&#x21BA;</button>
+              </div>
+              <div class="slider-container">
+                <label for="brightness-slider">Brightness</label>
+                <input id="brightness-slider" type="range" min="0" max="200" value="100">
+                <input id="brightness-value" class="channel-value-input" type="number" min="0" max="200" step="1" value="100" inputmode="numeric" aria-label="Brightness value">
+                <button id="brightness-reset-btn" class="channel-reset-btn" title="Reset brightness" aria-label="Reset brightness">&#x21BA;</button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="statusbar">
+        <span>Tip: drag directly on the image to reposition quickly.</span>
+      </footer>
+    </div>
+
+    <div id="help-menu" style="display:none;">
+      <button id="close-help-btn">✕</button>
+      <h3>How to Use</h3>
+      <ul>
+        <li><h3>Controls:</h3></li>
+        <li><strong>Drag &amp; Drop:</strong> Drag an image into the center area to load it.</li>
+        <li><strong>Move Image:</strong> Click and drag the image, use arrow keys, or arrow buttons to reposition.</li>
+        <li><strong>Enlarge:</strong> Hold + button, press + key, scroll up, or use Enlarge button to increase size.</li>
+        <li><strong>Shrink:</strong> Hold - button, press - key, scroll down, or use Shrink button to decrease size.</li>
+        <li><strong>Flip:</strong> Press F key to mirror the image horizontally.</li>
+        <li><strong>Rotate:</strong> Press R key to rotate the image clockwise.</li>
+        <li><strong>Quit:</strong> Click Quit to exit the image and restart the page.</li>
+        <li><h3>Filters:</h3></li>
+        <li><strong>Reset:</strong> Click Reset to recenter image and return to original size.</li>
+        <li><strong>Invert:</strong> Click Invert to apply a reverse color effect to the image.</li>
+        <li><strong>Grayscale:</strong> Click Grayscale to apply a grayscale effect to the image.</li>
+        <li><strong>Dark Edges:</strong> Click Dark Edges to apply a filter to darken the image from the edges to the center.</li>
+        <li><strong>Beige:</strong> Click Beige to apply a beige tone filter to the image.</li>
+        <li><strong>Polarization:</strong> Click Polarization to removes glare, suppresses reflections from non-metallic surfaces, and increases color saturation</li>
+        <li><strong>Acrylic:</strong> Click Acrylic to give an acrylic like apearance to the image</li>
+        <li><strong>Median:</strong> Click Median to reduce noise specifically a "salt and pepper" effect on your image</li>
+        <li><strong>Sobel:</strong> Click Sobel to apply a filter to outline edges on the image highlighting regions of high contrast</li>
+        <li><h3>Transformation Filters:</h3></li>
+        <li><strong>Height:</strong> Create a hight map with the inputed image as a base</li>
+        <li><strong>Normal:</strong> Create a normal map with the input image as a base</li>
+        <li><h3>Channels:</h3></li>
+        <li><strong>Red:</strong> Use the Red slider to modify the red channel of the image</li>
+        <li><strong>Green:</strong> Use the Green slider to modify the green channel of the image</li>
+        <li><strong>Blue:</strong> Use the Blue slider to modify the blue channel of the image</li>
+        <li><strong>Alpha:</strong> Use the Alpha slider to modify the alpha value of the image</li>
+        <li><strong>Brightness:</strong> Use the Brightness slider to modify the brightness of the image</li>
+      </ul>
+    </div>
+
+    <button id="show-btn">Show Menu</button>
+
+    <script src="src/main.js" defer></script>
+  </body>
+</html>
